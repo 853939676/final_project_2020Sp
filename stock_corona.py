@@ -11,9 +11,10 @@ def getstock(abbr, write_csv):
     url = 'https://query1.finance.yahoo.com/v7/finance/download/' + abbr + \
           '?period1=1579564800&period2=1587945431&interval=1d&events=history'
     df = pd.read_csv(url)
-    df[abbr] = round((df['Close'] - df['Open']) * 100 / df['Open'], 4)
-    df['date'] = df['Date'].astype(str).str[5:]
-    output = df[['date', abbr]]
+    df['ChangeRate'] = round((df['Close'] - df['Open']) * 100 / df['Open'], 4)
+    df['Date'] = df['Date'].astype(str).str[5:]
+    output = df[['Date', 'ChangeRate']]
+    output.columns = ['date', abbr]
     if write_csv:
         df.to_csv(output_filename, index=False)
     return(output)
@@ -30,6 +31,7 @@ def getCOVID(area_name, write_csv):
         df['state'] = df['state'].str.lower()
         area = df[df['state'] == area_name]
         area = area.reset_index()
+    area['date'] = area['date'].astype(str).str[5:]
     area['new'] = area.cases.diff()
     area.loc[area.index[0], 'new'] = area.loc[area.index[0], 'cases']
     area['new'] = area['new'].astype('int64')
@@ -45,14 +47,16 @@ def getCOVID(area_name, write_csv):
 
 
 # plot a line graph
-def plot(list):
-    for stock in list:
-        stock.plot(kind='line', x='date', ax=plt.gca())
+def plot(price,covid):
+    ax1 = price.plot()
+    price.plot(kind='line', x='date', ax=ax1)
+    ax2 = ax1.twinx()
+    covid.plot(kind='line',x='date', y='new', ax=ax2)
     plt.show()
 
 
-print(getCOVID('illinois', False))
+
 #list = []
 #list.append(getstock('STZ', False))
 #list.append(getstock('^GSPC', False))
-#plot(list)
+plot(getstock('STZ', False), getCOVID('illinois', False))
