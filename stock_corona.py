@@ -75,55 +75,72 @@ def getCOVID(area_name, write_csv):
     return area_out
 
 
-def stock_diff(stz, compare):
+def stock_covid(stz, compare, covid):
     """
-    This function takes two dataframe and calculate the difference between daily stock prices
-    the difference refers to 'how much stz is lower than the other company'
+    This function takes two stock dataframe to calculate the difference between daily stock prices,
+    the difference refers to 'how much stz is lower than the other company'.
+    Then merged it with the covid dataframe by left join since stock market does not open during weekend
+    and we are only keeping covid number for weekdays.
+
     :param stz: since the project focuses on Corona Beer, its company STZ should always be one input
     :param compare: the other stock price data that users interested in
-    :return: a merged dataset with date, stz price, the other price and differences
+    :param covid: covid-19 data of the selected area
+    :return: a merged dataset with date, two stock prices, differences, covid confirmed and new cases
     """
     output = stz.merge(compare, on='date', how='left')
     output['diff'] = output[output.columns[2]] - output[output.columns[1]]
+    output = output.merge(covid, on='date', how='left')
+    print(output)
     return output
 
-# merge the stock price difference and the confirmed covid cases
-def stock_covid(stock, covid):
-    output = stock.merge(covid, on='date', how='left')
-    return output
 
-# plot a line graph
-def plot(how, df):
-    if how=='covid':
-        fig,ax=plt.subplots()
-        stock, = ax.plot(df['date'], df['diff'])
-        stock.set_label('diff')
-        ax2 = ax.twinx()
-        cases, = ax2.plot(df['date'], df['cases'], color='orange')
-        cases.set_label('cases')
-        ax.xaxis.set_major_locator(plt.MaxNLocator(10))
-        ax.legend()
-        ax2.legend()
-        plt.show()
-    elif how=='compare':
-        fig,ax = plt.subplots(2)
-        stz, = ax[0].plot(df['date'],df[df.columns[1]])
-        stz.set_label(df.columns[1])
-        other, = ax[0].plot(df['date'],df[df.columns[2]])
-        other.set_label(df.columns[2])
-        ax[0].xaxis.set_major_locator(plt.MaxNLocator(10))
-        ax[0].legend()
-        diff, = ax[1].plot(df['date'],df['diff'])
-        diff.set_label('diff')
-        ax[1].xaxis.set_major_locator(plt.MaxNLocator(10))
-        ax[1].legend()
-        plt.show()
+def plot_covid(df, how):
+    """
+    This function can plot the stock price differences and covid-19 counts.
+    Users can choose to plot either new cases or cumulative confirmed cases.
 
+    :param df: the dataframe containing stock and covid info
+    :param how: cases refers to cumulative confirmed cases
+                new refers to new confirmed cases on that day
+    :return: a single line graph with two lines
+    """
+    fig,ax=plt.subplots()
+    stock, = ax.plot(df['date'], df['diff'])
+    stock.set_label('diff')
+    ax2 = ax.twinx()
+    cases, = ax2.plot(df['date'], df[how], color='orange')
+    cases.set_label(how)
+    ax.xaxis.set_major_locator(plt.MaxNLocator(10))
+    ax.legend()
+    ax2.legend()
+    plt.show()
+
+
+def plot_stock(df):
+    """
+    This function can plot the stock prices of two different companies and the difference between them
+
+    :param df: the dataframe containing stock prices of two companies
+    :return: two graph including a price graph and a difference graph
+    """
+    fig,ax = plt.subplots(2)
+    stz, = ax[0].plot(df['date'],df[df.columns[1]])
+    stz.set_label(df.columns[1])
+    other, = ax[0].plot(df['date'],df[df.columns[2]])
+    other.set_label(df.columns[2])
+    ax[0].xaxis.set_major_locator(plt.MaxNLocator(10))
+    ax[0].legend()
+    diff, = ax[1].plot(df['date'],df['diff'])
+    diff.set_label('diff')
+    ax[1].xaxis.set_major_locator(plt.MaxNLocator(10))
+    ax[1].legend()
+    plt.show()
 
 if __name__ == '__main__':
-    stock_before = stock_diff(getstock('STZ', False, 'before'), getstock('BUD', False, 'before'))
-    stock_after = stock_diff(getstock('STZ', False, 'after'), getstock('BUD', False, 'after'))
     covid = getCOVID('us', False)
+    stock_before = stock_covid(getstock('STZ', False, 'before'), getstock('BUD', False, 'before'), covid)
+    stock_after = stock_covid(getstock('STZ', False, 'after'), getstock('BUD', False, 'after'), covid)
 
-    plot('covid', stock_covid(stock_after, covid))
-    plot('compare', stock_after)
+    plot_stock(stock_before)
+    plot_stock(stock_after)
+    plot_covid(stock_after,'new')
