@@ -75,9 +75,14 @@ def getCOVID(area_name, write_csv):
     return area_out
 
 
-# merge the stock price of two different companies and calculate their difference
-# the diff column refers to 'how much stz is lower than the other company'
 def stock_diff(stz, compare):
+    """
+    This function takes two dataframe and calculate the difference between daily stock prices
+    the difference refers to 'how much stz is lower than the other company'
+    :param stz: since the project focuses on Corona Beer, its company STZ should always be one input
+    :param compare: the other stock price data that users interested in
+    :return: a merged dataset with date, stz price, the other price and differences
+    """
     output = stz.merge(compare, on='date', how='left')
     output['diff'] = output[output.columns[2]] - output[output.columns[1]]
     return output
@@ -91,18 +96,27 @@ def stock_covid(stock, covid):
 def plot(how, df):
     if how=='covid':
         fig,ax=plt.subplots()
-        ax.plot(df['date'], df['diff'])
+        stock, = ax.plot(df['date'], df['diff'])
+        stock.set_label('diff')
         ax2 = ax.twinx()
-        ax2.plot(df['date'], df['cases'])
+        cases, = ax2.plot(df['date'], df['cases'], color='orange')
+        cases.set_label('cases')
         ax.xaxis.set_major_locator(plt.MaxNLocator(10))
+        ax.legend()
+        ax2.legend()
         plt.show()
     elif how=='compare':
         fig,ax = plt.subplots(2)
-        ax[0].plot(df['date'],df[df.columns[1]])
-        ax[0].plot(df['date'],df[df.columns[2]])
+        stz, = ax[0].plot(df['date'],df[df.columns[1]])
+        stz.set_label(df.columns[1])
+        other, = ax[0].plot(df['date'],df[df.columns[2]])
+        other.set_label(df.columns[2])
         ax[0].xaxis.set_major_locator(plt.MaxNLocator(10))
-        ax[1].plot(df['date'],df['diff'])
+        ax[0].legend()
+        diff, = ax[1].plot(df['date'],df['diff'])
+        diff.set_label('diff')
         ax[1].xaxis.set_major_locator(plt.MaxNLocator(10))
+        ax[1].legend()
         plt.show()
 
 
@@ -112,4 +126,4 @@ if __name__ == '__main__':
     covid = getCOVID('us', False)
 
     plot('covid', stock_covid(stock_after, covid))
-    plot('compare', stock_before)
+    plot('compare', stock_after)
