@@ -13,7 +13,7 @@ some people connect it with Corona Beer and refuse to buy any Corona Beer under 
 **Hypothesis:**
 
 * The spread of COVID-19 will negatively influence the stock price of Constellation.
-* The influence of coronavirus on STZ stock price will gradually disappear as coronavirus continues.
+* The influence of coronavirus on Corona Beer stock price will gradually disappear as coronavirus continues.
 
 **Datasets:**
 
@@ -25,13 +25,16 @@ The program can retrieve up-to-date stock prices and COVID-19 data online and me
 to visualize stock prices and the spread of COVID-19.
 
 Users can run the code directly to get following comparisons:
-* Stock prices of Corona vs. Bud Light before and after COVID-19
-* Stock prices of Corona vs. Coors Light before and after COVID-19
+* Stock prices of [Corona(STZ)](https://finance.yahoo.com/quote/STZ?p=STZ&.tsrc=fin-srch)
+vs. [Bud Light(BUD)](https://finance.yahoo.com/quote/BUD?p=BUD&.tsrc=fin-srch) before and after COVID-19
+* Stock prices of [Corona(STZ)](https://finance.yahoo.com/quote/STZ?p=STZ&.tsrc=fin-srch) 
+vs. [Coors Light(TAP)](https://finance.yahoo.com/quote/TAP?p=TAP&.tsrc=fin-srch) before and after COVID-19
 * Stock price differences and new confirmed cases in the US
 
 Additional analysis can also be done using this program by changing function parameters, 
 some examples are given in the code:
-* Compare stock price difference of Corona Beer and S&P 500 number.
+* Compare stock price difference of [Corona(STZ)](https://finance.yahoo.com/quote/STZ?p=STZ&.tsrc=fin-srch) 
+and [S&P 500(^GSPC)](https://finance.yahoo.com/quote/%5EGSPC?p=^GSPC) number.
 * Compare stock price difference with daily confirmed COVID-19 cases in Illinois state.
 
 A slide containing detailed code structures and result graphs can be downloaded [here.](https://github.com/853939676/final_project_2020Sp/blob/master/Slide.pdf)
