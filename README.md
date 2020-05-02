@@ -21,7 +21,7 @@ some people connect it with Corona Beer and refuse to buy any Corona Beer under 
 * Stock price data: csv files downloaded from https://finance.yahoo.com/
 
 ## Methodology
-The program can retrieve up-to-date stock prices and COVID-19 data online and merge them together 
+The program can retrieve up-to-date stock prices and [COVID-19 data](https://github.com/nytimes/covid-19-data) online and merge them together 
 to visualize stock prices and the spread of COVID-19.
 
 Users can run the code directly to get following comparisons:

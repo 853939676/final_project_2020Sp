@@ -22,6 +22,37 @@ def getstock(abbr, write_csv, time):
     :param time: before refers to stock price before the spread of COVID-19(05-31-2019 to 12-31-2019)
                  after refers to stock price after the spread of COVID-19(01-11-2020 to 04-30-2020)
     :return: dataframe contains date(MM-DD) and close price of the day(named with stock abbr)
+
+    >>> getstock('STZ', False, 'before') # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+          date         STZ
+    0    05-31  176.449997
+    1    06-03  177.229996
+    2    06-04  184.440002
+    ...
+    146  12-27  189.229996
+    147  12-30  188.369995
+    <BLANKLINE>
+    [148 rows x 2 columns]
+
+    >>> getstock('STZ', False, 'after') # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+        date         STZ
+    0   01-21  190.229996
+    1   01-22  191.940002
+    2   01-23  193.970001
+    ...
+    69  04-29  169.419998
+    70  04-30  164.690002
+    [71 rows x 2 columns]
+
+    >>> getstock('BUD', False, 'after') # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+             date        BUD
+    0   01-21  78.809998
+    1   01-22  78.110001
+    2   01-23  78.260002
+    ...
+    69  04-29  48.660000
+    70  04-30  46.520000
+    [71 rows x 2 columns]
     """
     abbr = abbr.upper()
     output_filename = abbr+'.csv'
@@ -53,6 +84,15 @@ def getCOVID(area_name, write_csv):
     :param write_csv: users can indicate if they want to download the complete .csv to local
                       the file will be named as state name(or us)
     :return: dataframe contains date, cumulative cases and new confirmed cases
+
+    >>> getCOVID('us', False) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+          date    cases    new
+    0    01-21        1      1
+    1    01-22        1      0
+    2    01-23        1      0
+    3    01-24        2      1
+    4    01-25        3      1
+    ...
     """
     if area_name.lower() == 'us':  # url for us data
         url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv'
@@ -90,6 +130,18 @@ def stock_covid(stz, compare, covid):
     :param compare: the other stock price data that users interested in
     :param covid: covid-19 data of the selected area
     :return: a merged dataset with date, two stock prices, differences, covid confirmed and new cases
+
+    >>> stz = getstock('STZ', False, 'after')
+    >>> bud = getstock('BUD', False, 'after')
+    >>> us = getCOVID('us', False)
+    >>> stock_covid(stz, bud, us)# doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+        date         STZ        BUD        diff    cases    new
+    0   01-21  190.229996  78.809998 -111.419998        1      1
+    1   01-22  191.940002  78.110001 -113.830001        1      0
+    2   01-23  193.970001  78.260002 -115.709999        1      0
+    3   01-24  191.559998  77.739998 -113.820000        2      1
+    4   01-27  190.899994  75.580002 -115.319992        5      0
+    ...
     """
     output = stz.merge(compare, on='date', how='left')
     output['diff'] = output[output.columns[2]] - output[output.columns[1]]
