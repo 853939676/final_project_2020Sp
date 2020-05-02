@@ -1,3 +1,7 @@
+# Final Project for IS590PR Spring2020
+# Rui Liu(ruiliu8)
+# GitHub ID: 853939676
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -90,8 +94,28 @@ def stock_covid(stz, compare, covid):
     output = stz.merge(compare, on='date', how='left')
     output['diff'] = output[output.columns[2]] - output[output.columns[1]]
     output = output.merge(covid, on='date', how='left')
-    print(output)
     return output
+
+
+def plot_stock(df):
+    """
+    This function can plot the stock prices of two different companies and the difference between them
+
+    :param df: the dataframe containing stock prices of two companies
+    :return: two graph including a price graph and a difference graph
+    """
+    fig,ax = plt.subplots(2)
+    stz, = ax[0].plot(df['date'],df[df.columns[1]])
+    stz.set_label(df.columns[1])
+    other, = ax[0].plot(df['date'],df[df.columns[2]])
+    other.set_label(df.columns[2])
+    ax[0].xaxis.set_major_locator(plt.MaxNLocator(10))
+    ax[0].legend()
+    diff, = ax[1].plot(df['date'],df['diff'])
+    diff.set_label('diff')
+    ax[1].xaxis.set_major_locator(plt.MaxNLocator(10))
+    ax[1].legend()
+    plt.show()
 
 
 def plot_covid(df, how):
@@ -115,32 +139,42 @@ def plot_covid(df, how):
     ax2.legend()
     plt.show()
 
-
-def plot_stock(df):
-    """
-    This function can plot the stock prices of two different companies and the difference between them
-
-    :param df: the dataframe containing stock prices of two companies
-    :return: two graph including a price graph and a difference graph
-    """
-    fig,ax = plt.subplots(2)
-    stz, = ax[0].plot(df['date'],df[df.columns[1]])
-    stz.set_label(df.columns[1])
-    other, = ax[0].plot(df['date'],df[df.columns[2]])
-    other.set_label(df.columns[2])
-    ax[0].xaxis.set_major_locator(plt.MaxNLocator(10))
-    ax[0].legend()
-    diff, = ax[1].plot(df['date'],df['diff'])
-    diff.set_label('diff')
-    ax[1].xaxis.set_major_locator(plt.MaxNLocator(10))
-    ax[1].legend()
-    plt.show()
-
 if __name__ == '__main__':
-    covid = getCOVID('us', False)
-    stock_before = stock_covid(getstock('STZ', False, 'before'), getstock('BUD', False, 'before'), covid)
-    stock_after = stock_covid(getstock('STZ', False, 'after'), getstock('BUD', False, 'after'), covid)
+    #  get covid data of areas that we interested in
+    us_covid = getCOVID('us', False)
 
-    plot_stock(stock_before)
-    plot_stock(stock_after)
-    plot_covid(stock_after,'new')
+    #  analyze the stock price difference of Corona Beer with other Beer companies(BUD and TAP)
+    BUD_stock_before = stock_covid(getstock('STZ', False, 'before'), getstock('BUD', False, 'before'), us_covid)
+    BUD_stock_after = stock_covid(getstock('STZ', False, 'after'), getstock('BUD', False, 'after'), us_covid)
+    TAP_stock_before = stock_covid(getstock('STZ', False, 'before'), getstock('TAP', False, 'before'), us_covid)
+    TAP_stock_after = stock_covid(getstock('STZ', False, 'after'), getstock('TAP', False, 'after'), us_covid)
+
+    #  plot stock price differences before and after COVID-19
+    plot_stock(BUD_stock_before)
+    plot_stock(TAP_stock_before)
+    plot_stock(BUD_stock_after)
+    plot_stock(TAP_stock_after)
+
+    #  combine stock price difference with daily confirmed COVID-19 cases in the US
+    plot_covid(BUD_stock_after, 'new')
+    plot_covid(TAP_stock_after,'new')
+
+    #  additional analysis can also be done using this program:
+    #  1. compare stock price difference of Corona Beer and S&P 500 number
+    GSPC_stock_before = stock_covid(getstock('STZ', False, 'before'), getstock('^GSPC', False, 'before'), us_covid)
+    GSPC_stock_after = stock_covid(getstock('STZ', False, 'after'), getstock('^GSPC', False, 'after'), us_covid)
+    plot_stock(GSPC_stock_before)
+    plot_stock(GSPC_stock_after)
+    #  2. compare stock price difference with daily confirmed COVID-19 cases in Illinois state
+    illinois_covid = getCOVID('illinois', False)
+    BUD_stock_IL = stock_covid(getstock('STZ', False, 'after'), getstock('BUD', False, 'after'), illinois_covid)
+    TAP_stock_IL = stock_covid(getstock('STZ', False, 'after'), getstock('TAP', False, 'after'), illinois_covid)
+    plot_covid(BUD_stock_IL, 'new')
+    plot_covid(TAP_stock_IL, 'new')
+
+    #  From the graph produced above, we can draw three conclusions:
+    #  1. The spread of COVID-19 did negatively impacted the stock price of Corona Beer
+    #     compared with other beer companies, especially from 3/06 to 3/18.
+    #  2. The effect of COVID-19 is decreasing after 3/18.
+    #  3. There might be a positive relationship between COVID-19
+    #     and the stock price of Corona Beer compared with S&P 500 number.
