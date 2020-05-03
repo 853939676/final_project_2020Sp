@@ -45,7 +45,7 @@ and [S&P 500(^GSPC)](https://finance.yahoo.com/quote/%5EGSPC?p=^GSPC) number.
 * Compare stock price difference with daily confirmed COVID-19 cases in Illinois state.
 ![BUD and TAP](https://github.com/853939676/final_project_2020Sp/blob/master/img/BUD_TAP_IL.png)
 
-A slide containing detailed code structures and result graphs can be downloaded [here.](https://github.com/853939676/final_project_2020Sp/blob/master/Slide.pdf)
+A slide containing detailed code structure and result graphs can be downloaded [here.](https://github.com/853939676/final_project_2020Sp/blob/master/Slide.pdf)
 
 ## Conclusion:
 
