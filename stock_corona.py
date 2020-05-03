@@ -223,10 +223,3 @@ if __name__ == '__main__':
     TAP_stock_IL = stock_covid(getstock('STZ', False, 'after'), getstock('TAP', False, 'after'), illinois_covid)
     plot_covid(BUD_stock_IL, 'new')
     plot_covid(TAP_stock_IL, 'new')
-
-    #  From the graph produced above, we can draw three conclusions:
-    #  1. The spread of COVID-19 did negatively impacted the stock price of Corona Beer
-    #     compared with other beer companies, especially from 3/06 to 3/18.
-    #  2. The effect of COVID-19 is decreasing after 3/18.
-    #  3. There might be a positive relationship between COVID-19
-    #     and the stock price of Corona Beer compared with S&P 500 number.
