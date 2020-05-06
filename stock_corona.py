@@ -120,6 +120,7 @@ def getCOVID(area_name, write_csv):
         area = area.drop(columns=['index','state','fips'], axis=1)
         area.to_csv(output_filename, index=False)
     area_out = area[['date', 'cases', 'new']]
+    area_out.columns = ['date', 'cumulative', 'new']
     return area_out
 
 
@@ -150,7 +151,8 @@ def stock_covid(stz, compare, covid):
     [71 rows x 8 columns]
     """
     output = stz.merge(compare, on='date', how='left')
-    output['diff'] = output[output.columns[3]] - output[output.columns[1]]
+    output['price_diff'] = output[output.columns[3]] - output[output.columns[1]]
+    output['poc_diff'] = output[output.columns[4]] - output[output.columns[2]]
     output = output.merge(covid, on='date', how='left')
     return output
 
@@ -175,32 +177,36 @@ def plot_stock(df):
     other.set_label(df.columns[4])
     ax[1].xaxis.set_major_locator(plt.MaxNLocator(10))
     ax[1].legend()
-    diff, = ax[2].plot(df['date'],df['diff'])
-    diff.set_label('diff')
+    diffP, = ax[2].plot(df['date'],df['price_diff'])
+    ax2 = ax[2].twinx()
+    diffC, = ax2.plot(df['date'], df['poc_diff'], color='orange')
     ax[2].xaxis.set_major_locator(plt.MaxNLocator(10))
-    ax[2].legend()
+    ax2.legend((diffC, diffP),('price_diff', 'poc_diff'))
     plt.show()
 
 
-def plot_covid(df, how):
+def plot_covid(df, covid):
     """
     This function can plot the stock price differences and covid-19 counts.
     Users can choose to plot either new cases or cumulative confirmed cases.
 
     :param df: the dataframe containing stock and covid info
-    :param how: cases refers to cumulative confirmed cases
+    :param covid: cases refers to cumulative confirmed cases
                 new refers to new confirmed cases on that day
     :return: a single line graph with two lines
     """
-    fig,ax=plt.subplots()
-    stock, = ax.plot(df['date'], df['diff'])
-    stock.set_label('diff')
-    ax2 = ax.twinx()
-    cases, = ax2.plot(df['date'], df[how], color='orange')
-    cases.set_label(how)
-    ax.xaxis.set_major_locator(plt.MaxNLocator(10))
-    ax.legend()
-    ax2.legend()
+    fig,ax=plt.subplots(2)
+    stockP, = ax[0].plot(df['date'], df['price_diff'])
+    ax2 = ax[0].twinx()
+    cases, = ax2.plot(df['date'], df[covid], color='orange')
+    ax[0].xaxis.set_major_locator(plt.MaxNLocator(10))
+    ax2.legend((stockP, cases), ('price_diff', covid))
+
+    stockC, = ax[1].plot(df['date'], df['poc_diff'])
+    ax3 = ax[1].twinx()
+    cases, = ax3.plot(df['date'], df[covid], color='orange')
+    ax[1].xaxis.set_major_locator(plt.MaxNLocator(10))
+    ax3.legend((stockC, cases), ('poc_diff', covid))
     plt.show()
 
 if __name__ == '__main__':
@@ -212,7 +218,7 @@ if __name__ == '__main__':
     BUD_stock_after = stock_covid(getstock('STZ', False, 'after'), getstock('BUD', False, 'after'), us_covid)
     TAP_stock_before = stock_covid(getstock('STZ', False, 'before'), getstock('TAP', False, 'before'), us_covid)
     TAP_stock_after = stock_covid(getstock('STZ', False, 'after'), getstock('TAP', False, 'after'), us_covid)
-
+    print(BUD_stock_after)
     #  plot stock price differences before and after COVID-19
     plot_stock(BUD_stock_before)
     plot_stock(TAP_stock_before)
@@ -220,8 +226,8 @@ if __name__ == '__main__':
     plot_stock(TAP_stock_after)
 
     #  combine stock price difference with daily confirmed COVID-19 cases in the US
-    plot_covid(BUD_stock_after, 'new')
-    plot_covid(TAP_stock_after,'new')
+    plot_covid(BUD_stock_after, 'cumulative')
+    plot_covid(TAP_stock_after, 'cumulative')
 
     #  additional analysis can also be done using this program:
     #  1. compare stock price difference of Corona Beer and S&P 500 number
