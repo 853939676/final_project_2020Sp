@@ -24,41 +24,44 @@ def getstock(abbr, write_csv, time):
     :return: dataframe contains date(MM-DD) and close price of the day(named with stock abbr)
 
     >>> getstock('STZ', False, 'before') # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-          date         STZ
-    0    05-31  176.449997
-    1    06-03  177.229996
-    2    06-04  184.440002
+          date         STZ   STZ_POC
+    0    05-31  176.449997       NaN
+    1    06-03  177.229996  0.779999
+    2    06-04  184.440002  7.210006
     ...
-    146  12-27  189.229996
-    147  12-30  188.369995
-    <BLANKLINE>
-    [148 rows x 2 columns]
+    146  12-27  189.229996 -0.430008
+    147  12-30  188.369995 -0.860001
+
+    [148 rows x 3 columns]
 
     >>> getstock('STZ', False, 'after') # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-        date         STZ
-    0   01-21  190.229996
-    1   01-22  191.940002
-    2   01-23  193.970001
+         date         STZ   STZ_POC
+    0   01-21  190.229996       NaN
+    1   01-22  191.940002  1.710006
+    2   01-23  193.970001  2.029999
     ...
-    69  04-29  169.419998
-    70  04-30  164.690002
-    [71 rows x 2 columns]
+    69  04-29  169.419998  1.990005
+    70  04-30  164.690002 -4.729996
+
+    [71 rows x 3 columns]
 
     >>> getstock('BUD', False, 'after') # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-             date        BUD
-    0   01-21  78.809998
-    1   01-22  78.110001
-    2   01-23  78.260002
+         date        BUD   BUD_POC
+    0   01-21  78.809998       NaN
+    1   01-22  78.110001 -0.699997
+    2   01-23  78.260002  0.150001
     ...
-    69  04-29  48.660000
-    70  04-30  46.520000
-    [71 rows x 2 columns]
+    69  04-29  48.660000  1.810002
+    70  04-30  46.520000 -2.140000
+
+    [71 rows x 3 columns]
     """
     abbr = abbr.upper()
     output_filename = abbr+'.csv'
+    poc_name = abbr+'_POC'
     if time=='before':
         url = 'https://query1.finance.yahoo.com/v7/finance/download/' + abbr + \
-          '?period1=1559260800&period2=1577750400&interval=1d&events=history'
+          '?period1=1569024000&period2=1578009600&interval=1d&events=history'
     else:
         url = 'https://query1.finance.yahoo.com/v7/finance/download/' + abbr + \
           '?period1=1579564800&period2=1588283265&interval=1d&events=history'
@@ -66,9 +69,10 @@ def getstock(abbr, write_csv, time):
     df = pd.read_csv(url)
     #  trim the year in Date column
     df['Date'] = df['Date'].astype(str).str[5:]
-    output = df[['Date', 'Close']]
+    df[poc_name] = df['Close'].diff()
+    output = df[['Date', 'Close', poc_name]]
     #  rename columns for further steps
-    output.columns = ['date', abbr]
+    output.columns = ['date', abbr, poc_name]
     if write_csv:
         df.to_csv(output_filename, index=False)
     return(output)
@@ -135,16 +139,18 @@ def stock_covid(stz, compare, covid):
     >>> bud = getstock('BUD', False, 'after')
     >>> us = getCOVID('us', False)
     >>> stock_covid(stz, bud, us)# doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-        date         STZ        BUD        diff    cases    new
-    0   01-21  190.229996  78.809998 -111.419998        1      1
-    1   01-22  191.940002  78.110001 -113.830001        1      0
-    2   01-23  193.970001  78.260002 -115.709999        1      0
-    3   01-24  191.559998  77.739998 -113.820000        2      1
-    4   01-27  190.899994  75.580002 -115.319992        5      0
+         date         STZ   STZ_POC        BUD   BUD_POC      diff    cases    new
+    0   01-21  190.229996       NaN  78.809998       NaN       NaN        1      1
+    1   01-22  191.940002  1.710006  78.110001 -0.699997 -2.410003        1      0
+    2   01-23  193.970001  2.029999  78.260002  0.150001 -1.879998        1      0
+    3   01-24  191.559998 -2.410003  77.739998 -0.520004  1.889999        2      1
+    4   01-27  190.899994 -0.660004  75.580002 -2.159996 -1.499992        5      0
     ...
+
+    [71 rows x 8 columns]
     """
     output = stz.merge(compare, on='date', how='left')
-    output['diff'] = output[output.columns[2]] - output[output.columns[1]]
+    output['diff'] = output[output.columns[3]] - output[output.columns[1]]
     output = output.merge(covid, on='date', how='left')
     return output
 
@@ -156,17 +162,23 @@ def plot_stock(df):
     :param df: the dataframe containing stock prices of two companies
     :return: two graph including a price graph and a difference graph
     """
-    fig,ax = plt.subplots(2)
+    fig,ax = plt.subplots(3)
     stz, = ax[0].plot(df['date'],df[df.columns[1]])
     stz.set_label(df.columns[1])
-    other, = ax[0].plot(df['date'],df[df.columns[2]])
-    other.set_label(df.columns[2])
+    other, = ax[0].plot(df['date'],df[df.columns[3]])
+    other.set_label(df.columns[3])
     ax[0].xaxis.set_major_locator(plt.MaxNLocator(10))
     ax[0].legend()
-    diff, = ax[1].plot(df['date'],df['diff'])
-    diff.set_label('diff')
+    stz, = ax[1].plot(df['date'],df[df.columns[2]])
+    stz.set_label(df.columns[2])
+    other, = ax[1].plot(df['date'],df[df.columns[4]])
+    other.set_label(df.columns[4])
     ax[1].xaxis.set_major_locator(plt.MaxNLocator(10))
     ax[1].legend()
+    diff, = ax[2].plot(df['date'],df['diff'])
+    diff.set_label('diff')
+    ax[2].xaxis.set_major_locator(plt.MaxNLocator(10))
+    ax[2].legend()
     plt.show()
 
 
