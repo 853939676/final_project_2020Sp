@@ -12,7 +12,7 @@ some people connect it with Corona Beer and refuse to buy any Corona Beer under 
 
 **Hypothesis:**
 
-* The spread of COVID-19 will negatively influence the stock price of Constellation.
+* The spread of COVID-19 is negatively correlated to the stock price of Constellation.
 * The influence of coronavirus on Corona Beer stock price will gradually disappear as coronavirus continues.
 
 **Datasets:**
@@ -22,7 +22,7 @@ some people connect it with Corona Beer and refuse to buy any Corona Beer under 
 
 ## Methodology and Result
 The program can retrieve up-to-date stock prices and [COVID-19 data](https://github.com/nytimes/covid-19-data) online and merge them together 
-to visualize stock prices and the spread of COVID-19.
+to visualize stock prices and the spread of COVID-19. 
 
 Users can run the code directly to get following comparisons:
 * Stock prices of [Corona(STZ)](https://finance.yahoo.com/quote/STZ?p=STZ&.tsrc=fin-srch)
@@ -49,9 +49,9 @@ A slide containing detailed code structure and result graphs can be downloaded [
 
 ## Conclusion:
 
-* The spread of COVID-19 did negatively impacted the stock price of Corona Beer compared with other beer companies, 
+* The spread of COVID-19 did did have a negative correlation with the stock price of Corona Beer compared with other beer companies, 
 especially from 3/06 to 3/18.
-* The effect of COVID-19 is decreasing after 3/18.
+* The strength of this correlation is decreasing after 3/18.
 
 * There might be a positive relationship between COVID-19 and the stock price of Corona Beer compared with S&P 500 number.
 

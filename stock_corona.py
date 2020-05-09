@@ -10,13 +10,14 @@ def getstock(abbr, write_csv, time):
     """
     This function can retrieve a csv containing stock prices of a single company
     from yahoo finance https://finance.yahoo.com/
-    and return a cleaned dataframe which contains only date and close price
+    and return a cleaned dataframe which contains date, close price and percent of change
 
     :param abbr: abbreviation of company stock name
         abbreviation related to this project:
             ^GSPC for S&P 500
-            BUD for Anheuser-Busch InBev SA/NV
+            BUD for Anheuser-Busch InBev SA/NV.
             STZ for Constellation Brands, Inc.
+            TAP for Molson Coors Beverage Company.
     :param write_csv: users can indicate if they want to download the complete .csv to local
                       the file will be named as the stock abbreviation
     :param time: before refers to stock price before the spread of COVID-19(05-31-2019 to 12-31-2019)
@@ -24,37 +25,32 @@ def getstock(abbr, write_csv, time):
     :return: dataframe contains date(MM-DD) and close price of the day(named with stock abbr)
 
     >>> getstock('STZ', False, 'before') # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-          date         STZ   STZ_POC
-    0    05-31  176.449997       NaN
-    1    06-03  177.229996  0.779999
-    2    06-04  184.440002  7.210006
+         date         STZ   STZ_POC
+    0   09-23  205.770004       NaN
+    1   09-24  205.039993 -0.730011
+    2   09-25  204.000000 -1.039993
     ...
-    146  12-27  189.229996 -0.430008
-    147  12-30  188.369995 -0.860001
-
-    [148 rows x 3 columns]
+    69  12-31  189.750000  1.380005
+    70  01-02  188.300003 -1.449997
+    [71 rows x 3 columns]
 
     >>> getstock('STZ', False, 'after') # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
          date         STZ   STZ_POC
     0   01-21  190.229996       NaN
     1   01-22  191.940002  1.710006
     2   01-23  193.970001  2.029999
+    3   01-24  191.559998 -2.410003
+    4   01-27  190.899994 -0.660004
     ...
-    69  04-29  169.419998  1.990005
-    70  04-30  164.690002 -4.729996
-
-    [71 rows x 3 columns]
 
     >>> getstock('BUD', False, 'after') # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
          date        BUD   BUD_POC
     0   01-21  78.809998       NaN
     1   01-22  78.110001 -0.699997
     2   01-23  78.260002  0.150001
+    3   01-24  77.739998 -0.520004
+    4   01-27  75.580002 -2.159996
     ...
-    69  04-29  48.660000  1.810002
-    70  04-30  46.520000 -2.140000
-
-    [71 rows x 3 columns]
     """
     abbr = abbr.upper()
     output_filename = abbr+'.csv'
@@ -64,7 +60,7 @@ def getstock(abbr, write_csv, time):
           '?period1=1569024000&period2=1578009600&interval=1d&events=history'
     else:
         url = 'https://query1.finance.yahoo.com/v7/finance/download/' + abbr + \
-          '?period1=1579564800&period2=1588283265&interval=1d&events=history'
+          '?period1=1579564800&period2=1588896000&interval=1d&events=history'
     #  read the url into dataframe
     df = pd.read_csv(url)
     #  trim the year in Date column
@@ -90,12 +86,12 @@ def getCOVID(area_name, write_csv):
     :return: dataframe contains date, cumulative cases and new confirmed cases
 
     >>> getCOVID('us', False) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-          date    cases    new
-    0    01-21        1      1
-    1    01-22        1      0
-    2    01-23        1      0
-    3    01-24        2      1
-    4    01-25        3      1
+          date  cumulative    new
+    0    01-21           1      1
+    1    01-22           1      0
+    2    01-23           1      0
+    3    01-24           2      1
+    4    01-25           3      1
     ...
     """
     if area_name.lower() == 'us':  # url for us data
@@ -126,7 +122,8 @@ def getCOVID(area_name, write_csv):
 
 def stock_covid(stz, compare, covid):
     """
-    This function takes two stock dataframe to calculate the difference between daily stock prices,
+    This function takes two stock dataframe to calculate the difference between daily stock prices
+    and percent of change of two companies,
     the difference refers to 'how much stz is lower than the other company'.
     Then merged it with the covid dataframe by left join since stock market does not open during weekend
     and we are only keeping covid number for weekdays.
@@ -134,21 +131,19 @@ def stock_covid(stz, compare, covid):
     :param stz: since the project focuses on Corona Beer, its company STZ should always be one input
     :param compare: the other stock price data that users interested in
     :param covid: covid-19 data of the selected area
-    :return: a merged dataset with date, two stock prices, differences, covid confirmed and new cases
+    :return: a merged dataset with date, two stock prices, differences, covid cumulative and new cases
 
     >>> stz = getstock('STZ', False, 'after')
     >>> bud = getstock('BUD', False, 'after')
     >>> us = getCOVID('us', False)
     >>> stock_covid(stz, bud, us)# doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-         date         STZ   STZ_POC        BUD   BUD_POC      diff    cases    new
-    0   01-21  190.229996       NaN  78.809998       NaN       NaN        1      1
-    1   01-22  191.940002  1.710006  78.110001 -0.699997 -2.410003        1      0
-    2   01-23  193.970001  2.029999  78.260002  0.150001 -1.879998        1      0
-    3   01-24  191.559998 -2.410003  77.739998 -0.520004  1.889999        2      1
-    4   01-27  190.899994 -0.660004  75.580002 -2.159996 -1.499992        5      0
+         date         STZ   STZ_POC  ...  poc_diff  cumulative    new
+    0   01-21  190.229996       NaN  ...       NaN           1      1
+    1   01-22  191.940002  1.710006  ... -2.410003           1      0
+    2   01-23  193.970001  2.029999  ... -1.879998           1      0
+    3   01-24  191.559998 -2.410003  ...  1.889999           2      1
+    4   01-27  190.899994 -0.660004  ... -1.499992           5      0
     ...
-
-    [71 rows x 8 columns]
     """
     output = stz.merge(compare, on='date', how='left')
     output['price_diff'] = output[output.columns[3]] - output[output.columns[1]]
@@ -162,7 +157,9 @@ def plot_stock(df):
     This function can plot the stock prices of two different companies and the difference between them
 
     :param df: the dataframe containing stock prices of two companies
-    :return: two graph including a price graph and a difference graph
+    :return: One graph of prices;
+             one graph of percent of change;
+             one graph of differences(price and percent of change).
     """
     fig,ax = plt.subplots(3)
     stz, = ax[0].plot(df['date'],df[df.columns[1]])
@@ -181,7 +178,7 @@ def plot_stock(df):
     ax2 = ax[2].twinx()
     diffC, = ax2.plot(df['date'], df['poc_diff'], color='orange')
     ax[2].xaxis.set_major_locator(plt.MaxNLocator(10))
-    ax2.legend((diffC, diffP),('price_diff', 'poc_diff'))
+    ax2.legend((diffP, diffC),('price_diff', 'poc_diff'))
     plt.show()
 
 
@@ -193,7 +190,8 @@ def plot_covid(df, covid):
     :param df: the dataframe containing stock and covid info
     :param covid: cases refers to cumulative confirmed cases
                 new refers to new confirmed cases on that day
-    :return: a single line graph with two lines
+    :return: One graph of price difference vs. covid situation;
+             one graph of percentage of change vs. covid situation.
     """
     fig,ax=plt.subplots(2)
     stockP, = ax[0].plot(df['date'], df['price_diff'])
@@ -218,7 +216,6 @@ if __name__ == '__main__':
     BUD_stock_after = stock_covid(getstock('STZ', False, 'after'), getstock('BUD', False, 'after'), us_covid)
     TAP_stock_before = stock_covid(getstock('STZ', False, 'before'), getstock('TAP', False, 'before'), us_covid)
     TAP_stock_after = stock_covid(getstock('STZ', False, 'after'), getstock('TAP', False, 'after'), us_covid)
-    print(BUD_stock_after)
     #  plot stock price differences before and after COVID-19
     plot_stock(BUD_stock_before)
     plot_stock(TAP_stock_before)
@@ -241,3 +238,4 @@ if __name__ == '__main__':
     TAP_stock_IL = stock_covid(getstock('STZ', False, 'after'), getstock('TAP', False, 'after'), illinois_covid)
     plot_covid(BUD_stock_IL, 'new')
     plot_covid(TAP_stock_IL, 'new')
+
